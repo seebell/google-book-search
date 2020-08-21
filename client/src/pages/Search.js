@@ -1,143 +1,85 @@
-import React, { Component } from 'react';
-import Header from '../components/Header';
-import SearchBar from '../components/SearchBar';
-import SubmitBtn from '../components/SubmitBtn';
-import Card from '../components/Card';
-import { Grid, Cell } from 'react-foundation';
-import { Link } from 'react-router-dom';
-import Button from '../components/Link';
-import Alert from '../components/Alert';
-import API from '../utils/API';
-import './style.css';
+import React, { Component } from "react";
+import API from "../utils/API";
+import Jumbotron from "../components/Jumbotron";
+import { Container, Row, Col } from "../components/Grid";
+import SearchForm from "../components/SearchForm";
+import SearchResult from "../components/SearchResult"
+
 
 class Search extends Component {
+    
     state = {
-        keywords: '',
-        author: '',
-        bookList: [],
-        termSearched: true,
-        updateBook: false,
-        savedBookTitle: ''
-    }
-
-    searchBooksByKeyword = () => {
-        API.searchbyKeywords(this.state.keywords)
-           .then(res => {
-               console.log(res.data.items)
-            this.setState({ bookList: res.data.items })
-           })
-           .catch(error => console.log(error));
-    }
-
-    searchBooksByKeywordAndAuthor = () => {
-        API.searchbyKeywordsAndAuthor(
-            this.state.keywords,
-            this.state.author
-        ).then(res => this.setState({ bookList: res.data.items }))
-         .catch(error => console.log(error));
-    }
+        search: "",
+        books: [],
+        error: "",
+        message: ""
+    };
 
     handleInputChange = event => {
-        let { name, value } = event.target;
-
-        this.setState({
-            [name]: value
-        });
+        this.setState({ search: event.target.value })
     }
 
-    handleSubmit = event => {
+    handleFormSubmit = event => {
         event.preventDefault();
-
-        if (!this.state.keywords) {
-            this.setState({ termSearched: false })
-        } else if (!this.state.author) {
-            this.searchBooksByKeyword();
-        } else {
-            this.searchBooksByKeywordAndAuthor();
-        }
-        
+        API.getGoogleSearchBooks(this.state.search)
+            .then(res => {
+                if (res.data.items === "error") {
+                    throw new Error(res.data.items);
+                }
+                else {
+                    let results = res.data.items
+                    results = results.map(result => {
+                        result = {
+                            key: result.id,
+                            id: result.id,
+                            title: result.volumeInfo.title,
+                            author: result.volumeInfo.authors,
+                            description: result.volumeInfo.description,
+                            image: result.volumeInfo.imageLinks.thumbnail,
+                            link: result.volumeInfo.infoLink
+                        }
+                        return result;
+                    })
+                    this.setState({ books: results, error: "" })
+                }
+            })
+            .catch(err => this.setState({ error: err.items }));
     }
 
-    saveBookToDB = data => {
-        API.addBook(data)
-           .then(res => {
-              this.setState({ savedBookTitle: res.data.title });
-              this.notify();
-           })
-           .catch(error => console.log(error));
+    handleSavedButton = event => {
+        event.preventDefault();
+        console.log(this.state.books)
+        let savedBooks = this.state.books.filter(book => book.id === event.target.id)
+        savedBooks = savedBooks[0];
+        API.saveBook(savedBooks)
+            .then(this.setState({ message: alert("Your book is saved") }))
+            .catch(err => console.log(err))
     }
-
-    removeNotification = () => {
-        this.setState({ updateBook: false });
-    }
-
-    notify = () => {
-        API.notifyUser(() => {
-            this.setState({ updateBook: true }); 
-        })
-        setTimeout(this.removeNotification, 3000);        
-    }
-
     render() {
         return (
-            <div>
-                <Header title="Google Books Search"/>
-                {/* Link to Favorites */}
-                <Link to="/books">
-                    <Button label={"Go to favorites"}/>
-                </Link>  
-                <div className="search-container">
-                    <Grid className="display">
-                        <h2 className="sub-title">Search & Save Books</h2>
-                    </Grid>
-                    {/* Form to search books */}
-                    <Grid className="display search-form">
-                        <form>
-                            <SearchBar 
-                            name="keywords"
-                            value={this.state.keywords}
-                            onChange={this.handleInputChange}
-                            placeholder={this.state.termSearched 
-                                ? "Search by keywords..." 
-                                : "Keyword Required"}/>
-                            <SearchBar 
-                            placeholder="Filter by author..."
-                            name="author"
-                            value={this.state.author}
-                            onChange={this.handleInputChange}/>
-                            <SubmitBtn label="Submit" onClick={this.handleSubmit}/>
-                        </form>               
-                    </Grid>   
-                    {this.state.updateBook 
-                        ? <Alert heading="Book saved" message={`"${this.state.savedBookTitle}" has been added to favorites.`}/>
-                        : null}   
-                    {/* List of book results */}
-                    <Grid>
-                        {this.state.bookList.map(book => {
-                            let result = {
-                                title: book.volumeInfo.title,
-                                authors: book.volumeInfo.authors ? book.volumeInfo.authors.join(', ').toString() : 'Author unavailable.',
-                                image: book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : '../images/default.png',
-                                description: book.searchInfo ? book.searchInfo.textSnippet : 'No description available.',
-                                link: book.volumeInfo.previewLink
-                            }
-                            return (
-                                <Grid className="display2" key={book.id}>
-                                    <Cell small={10} large={10} >
-                                        <Card
-                                        title={result.title} authors={result.authors}
-                                        image={result.image} description={result.description}
-                                        link={result.link} btnType="Save"
-                                        handler={() => this.saveBookToDB(result)}/>
-                                    </Cell>
-                                </Grid>
-                            );
-                        })}
-                    </Grid>
-                </div>
-            </div>
+            <Container fluid>
+                <Jumbotron>
+                    <h1 className="text-white">Find Your Favorite Books with GoogleBook API</h1>
+                </Jumbotron>
+                <Container>
+                    <Row>
+                        <Col size="12">
+                            <SearchForm
+                                handleFormSubmit={this.handleFormSubmit}
+                                handleInputChange={this.handleInputChange}
+                            />
+                        </Col>
+                    </Row>
+                </Container>
+                <br></br>
+                <Container>
+                    <SearchResult books={this.state.books} handleSavedButton={this.handleSavedButton} />
+                </Container>
+            </Container>
         )
     }
+
+
 }
 
-export default Search;
+export default Search

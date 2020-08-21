@@ -1,22 +1,24 @@
-
-const dotenv = require("dotenv");
-dotenv.config();
-const axios = require("axios");
+import axios from "axios"
 
 export default {
-    searchbyKeywords: function(keywords) {
-        return axios.get(`https://www.googleapis.com/books/v1/volumes?q=${keywords}&key=${process.env.REACT_APP_BOOKS_KEY}`);
+    getGoogleSearchBooks: function(query) {
+        return axios.get("https://www.googleapis.com/books/v1/volumes?q=" + query)
     },
-    searchbyKeywordsAndAuthor: function(keywords, author) {
-        return axios.get(`https://www.googleapis.com/books/v1/volumes?q=${keywords}+inauthor:${author}&key=${process.env.REACT_APP_BOOKS_KEY}`);
-    },
-    getBooks: function() {
+
+    getBooks: function () {
         return axios.get("/api/books");
     },
-    addBook: function(data) {
-        return axios.post("/api/books", data);
+
+    getBook: function (id) {
+        return axios.get("/api/books/" + id);
     },
-    deleteBook: function(id) {
+
+    saveBook: function (savedBooks) {
+        return axios.post("/api/books", savedBooks);
+    },
+
+    deleteBook: function (id) {
         return axios.delete("/api/books/" + id);
     }
+
 }
