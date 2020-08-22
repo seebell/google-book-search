@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.use(routes)
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/google-book-search", 
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/books", 
 {
   useNewUrlParser: true,
   useUnifiedTopology: true,
