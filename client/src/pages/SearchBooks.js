@@ -6,8 +6,8 @@ import SearchForm from "../components/SearchForm";
 import SearchResult from "../components/SearchResult"
 
 
-class Search extends Component {
-    
+class SearchBooks extends Component {
+    //create state
     state = {
         search: "",
         books: [],
@@ -82,4 +82,4 @@ class Search extends Component {
 
 }
 
-export default Search
+export default SearchBooks

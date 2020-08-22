@@ -1,8 +1,9 @@
+  
 import React from "react";
 import { Col, Row, Container } from "../components/Grid";
 import Jumbotron from "../components/Jumbotron";
 
-function NotFound() {
+function NoMatch() {
   return (
     <Container fluid>
       <Row>
@@ -21,4 +22,4 @@ function NotFound() {
   );
 }
 
-export default NotFound;
+export default NoMatch;
