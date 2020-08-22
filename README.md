@@ -30,7 +30,7 @@ Easy to use; just type the book or author name on search bar and it will find it
 As a book lover, I want an app that would let me search books easily and let me save them so that I can remember which books I'm interested in
 
 ## Screenshot for the app
-  ![]()<br>
+  ![](https://github.com/seebell/google-book-search/blob/master/book.jpg)<br>
   
 
 # Heroku link for the deployed app
